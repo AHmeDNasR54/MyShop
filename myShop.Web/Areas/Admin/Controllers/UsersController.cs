@@ -44,5 +44,28 @@ namespace myShop.Web.Areas.Admin.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index", "Users", new { area = "Admin" });
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+
+            var user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            _context.ApplicationUsers.Remove(user);
+            _context.SaveChanges();
+            TempData["success"] = "User deleted successfully!";
+
+            return RedirectToAction("Index", "Users", new { area = "Admin" });
+        }
     }
 }

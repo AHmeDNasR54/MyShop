@@ -27,6 +27,9 @@ namespace myShop.DataAccess.Data
         public DbSet<OrderHeader> OrderHeaders { get; set; }
 
 
+        public DbSet<UserVerificationCode> UserVerificationCodes { get; set; }
+
+
 
     }
 }

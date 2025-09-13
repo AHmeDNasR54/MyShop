@@ -3,11 +3,11 @@ using myShop.DataAccess.Data;
 using myShop.DataAccess.Implementation;
 using myShop.Entities.Repositories;
 using Microsoft.AspNetCore.Identity;
-using myshop.Utilities;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using myShop.Entities.Models;
 using myShop.Utilities;
 using Stripe;
+using myShop.Utilities.Service;
 
 namespace myShop.Web
 {
@@ -26,14 +26,16 @@ namespace myShop.Web
 
             builder.Services.Configure<StripeData>(builder.Configuration.GetSection("Stripe"));
 
-            builder.Services.AddIdentity<IdentityUser,IdentityRole>(options=>options.Lockout.DefaultLockoutTimeSpan=TimeSpan.FromDays(4))
+            builder.Services.AddIdentity<IdentityUser,IdentityRole>
+                (options=> { options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(4);
+                             options.SignIn.RequireConfirmedAccount = true; })
                 .AddDefaultTokenProviders().AddDefaultUI().AddEntityFrameworkStores<ApplicationDbContext>();
 
 
 
-
-            builder.Services.AddScoped<IEmailSender, EmailSender>();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IunitOfWork,UnitOfWork>();
+            builder.Services.AddScoped<VerificationService>();
 
 
             builder.Services.AddDistributedMemoryCache();
@@ -78,7 +80,9 @@ namespace myShop.Web
             //app.MapControllerRoute(
             //      name: "default",
             //     pattern: "{controller=Home}/{action=Index}/{id?}");
-    
+            app.MapControllerRoute(
+            name: "General",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
             app.Run();
         }
     }

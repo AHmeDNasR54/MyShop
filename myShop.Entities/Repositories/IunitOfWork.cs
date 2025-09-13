@@ -15,6 +15,7 @@ namespace myShop.Entities.Repositories
         IOrderHeaderRepository OrderHeader { get; }
         IOrderDetailRepository OrderDetail { get; }
         IApplicationUserRepository ApplicationUsers { get; }
+        IVerificationCodeRepository verificationCode{ get; }
         int complete();
     }
 }

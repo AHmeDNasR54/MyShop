@@ -29,8 +29,12 @@ namespace myShop.Web.Areas.Customer.Controllers
                 return View(products);
             }
 
-        public IActionResult Details(int ProductId)
+        public IActionResult Details(int ProductId=0)
         {
+            if (ProductId==0)
+            {
+                return RedirectToAction("Index");
+            }
             var product = _unitofwork.Products.GetFirstorDefault(v => v.Id == ProductId, Includeword: "Category");
             if(product == null)
             {
@@ -48,7 +52,7 @@ namespace myShop.Web.Areas.Customer.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public IActionResult Details(ShoppingCart shoppingCart)
+        public IActionResult Details(ShoppingCart shoppingCart /* , string returnUrl = null*/)
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
@@ -73,8 +77,11 @@ namespace myShop.Web.Areas.Customer.Controllers
                 _unitofwork.ShoppingCarts.IncreaseCount(Cartobj, shoppingCart.Count);
                 _unitofwork.complete();
             }
-            
 
+            //if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            //{
+            //    return Redirect(returnUrl);
+            //}
             return RedirectToAction("Index");
         }
 

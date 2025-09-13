@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using myShop.Entities.Models;
 using myShop.Utilities;
+using myShop.Utilities.Service;
 
 namespace myShop.Web.Areas.Identity.Pages.Account
 {
@@ -33,6 +34,9 @@ namespace myShop.Web.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
 
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly VerificationService _verificationService;
+
+
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -40,7 +44,7 @@ namespace myShop.Web.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-             RoleManager<IdentityRole> roleManager)
+             RoleManager<IdentityRole> roleManager, VerificationService verificationService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -50,6 +54,7 @@ namespace myShop.Web.Areas.Identity.Pages.Account
             _emailSender = emailSender;
 
             _roleManager = roleManager;
+            _verificationService = verificationService;
         }
 
         /// <summary>
@@ -128,7 +133,88 @@ namespace myShop.Web.Areas.Identity.Pages.Account
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            returnUrl ??= Url.Content("~/");
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+            if (ModelState.IsValid)
+            {
+                var user = CreateUser();
+
+                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                user.City = Input.City;
+                user.Name = Input.Name;
+                user.Address = Input.Address;
+
+                var result = await _userManager.CreateAsync(user, Input.Password);
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User created a new account with password.");
+
+                    // Assign role
+                    string role = HttpContext.Request.Form["RoleRadio"].ToString();
+                    if (String.IsNullOrEmpty(role))
+                        await _userManager.AddToRoleAsync(user, SD.CustomerRole);
+                    else
+                        await _userManager.AddToRoleAsync(user, role);
+
+
+                    // Generate and send verification code
+                     _verificationService.GenerateAndSendCode((ApplicationUser)user);
+
+                    return RedirectToPage("VerifyCode", new { userId = user.Id, returnUrl = returnUrl });
+                
+                // End of verification code logic
+                /*
+                // Generate confirmation email
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                    protocol: Request.Scheme);
+
+                await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                // Redirect logic
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    // لو لازم يتأكد الأول
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                }
+                else
+                {
+                    // لو مش مطلوب تأكيد، ادخله مباشرة
+                    if (String.IsNullOrEmpty(role))
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
+                    }
+                    else
+                    {
+                        // لو أدمن أنشأ مستخدم جديد بدور معين
+                        return RedirectToAction("Index", "Users", new { area = "Admin" });
+                    }
+                }*/
+            }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            // If we got this far, something failed, redisplay form
+            return Page();
+        }
+
+        /*
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -193,7 +279,7 @@ namespace myShop.Web.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
-        }
+        }*/
 
         private ApplicationUser CreateUser()
         {

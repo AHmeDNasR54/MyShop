@@ -25,7 +25,7 @@
                         <!-- Product actions-->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a asp-action="Details" asp-route-ProductId="@item.Id" class="btn btn-outline-dark mt-auto">View Details</a>
+                                <a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-ProductId="@item.Id" class="btn btn-outline-dark mt-auto">View Details</a>
                             </div>
                         </div>
                     </div>

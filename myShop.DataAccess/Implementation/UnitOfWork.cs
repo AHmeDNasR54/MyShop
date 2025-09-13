@@ -21,6 +21,8 @@ namespace myShop.DataAccess.Implementation
 
         public IApplicationUserRepository ApplicationUsers { get; }
 
+        public IVerificationCodeRepository verificationCode { get; }
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -30,6 +32,7 @@ namespace myShop.DataAccess.Implementation
             OrderHeader = new OrderHeaderRepository(context);
             OrderDetail = new OrderDetailRepository(context);
             ApplicationUsers = new ApplicationUserRepository(context);
+            verificationCode = new VerificationCodeRepository(context);
         }
 
 
