@@ -1,0 +1,26 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Server=.;Database=myShopDb;Trusted_Connection=True;",
+        "ApplicationDbContextConnection": "Server=(localdb)\\mssqllocaldb;Database=myShop.Web;Trusted_Connection=True;MultipleActiveResultSets=true"
+    },
+    "Stripe": {
+        "Secretkey": "your-stripe-secret-key",
+        "Publishablekey": "your-stripe-publishable-key"
+    },
+    "EmailSettings": {
+        "SmtpServer": "smtp.gmail.com",
+        "Port": 587,
+        "SenderName": "Your App Name",
+        "EnableSSL": true,
+        "SenderEmail": "your-email@gmail.com",
+        "Username": "your-email@gmail.com",
+        "Password": "your-app-password"
+    },
+    "AllowedHosts": "*"
+}
